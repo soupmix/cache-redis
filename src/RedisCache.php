@@ -30,23 +30,33 @@ class RedisCache implements CacheInterface
             $redisConfig[$key] = $value;
         }
         if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
-            $this->handler->connect(
-                $redisConfig['host'],
-                $redisConfig['port'],
-                $redisConfig['timeout'],
-                null,
-                $redisConfig['reconnectAttempt']
-            );
-        } else {
-            $this->handler->pconnect(
-                $redisConfig['host'],
-                $redisConfig['port'],
-                $redisConfig['timeout'],
-                $redisConfig['persistentId']
-            );
+            return $this->connect($redisConfig);
         }
+        return $this->persistentConnect($redisConfig);
+    }
+
+    private function connect( array $redisConfig){
+        $this->handler->connect(
+            $redisConfig['host'],
+            $redisConfig['port'],
+            $redisConfig['timeout'],
+            null,
+            $redisConfig['reconnectAttempt']
+        );
         $this->handler->select($redisConfig['dbIndex']);
     }
+
+    private function persistentConnect( array $redisConfig){
+        $this->handler->pconnect(
+            $redisConfig['host'],
+            $redisConfig['port'],
+            $redisConfig['timeout'],
+            $redisConfig['persistentId']
+        );
+        $this->handler->select($redisConfig['dbIndex']);
+
+    }
+
     /**
      * Fetch a value from the cache.
      *
