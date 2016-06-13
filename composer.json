@@ -1,0 +1,25 @@
+{
+  "name": "soupmix/cache-redis",
+  "type": "library",
+  "description": "Framework agnostic Redis adapter for SimpleCache Interface.",
+  "keywords": ["cache", "adapters", "simplecache", "redis"],
+  "homepage": "https://github.com/soupmix/cache-redis",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mehmet Korkmaz",
+      "email": "mehmet@mkorkmaz.com",
+      "homepage": "https://mkorkmaz.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.5",
+    "ext-redis":"*",
+    "soupmix/cache-base": "~0.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Soupmix\\Cache\\": "src/"
+    }
+  }
+}
