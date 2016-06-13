@@ -24,7 +24,7 @@ class RedisCache implements CacheInterface
      */
     public function __construct(array $config)
     {
-        $this->handler=$redis = new \Redis();
+        $this->handler= new \Redis();
         $redisConfig= $this::$defaults;
         foreach ($config as $key=>$value) {
             $redisConfig[$key] = $value;
