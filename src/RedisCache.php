@@ -29,7 +29,7 @@ class RedisCache implements CacheInterface
         foreach ($config as $key=>$value) {
             $redisConfig[$key] = $value;
         }
-        if( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)){
+        if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
             $this->handler->connect(
                 $redisConfig['host'],
                 $redisConfig['port'],
@@ -37,8 +37,7 @@ class RedisCache implements CacheInterface
                 null,
                 $redisConfig['reconnectAttempt']
             );
-        }
-        else{
+        } else {
             $this->handler->pconnect(
                 $redisConfig['host'],
                 $redisConfig['port'],
