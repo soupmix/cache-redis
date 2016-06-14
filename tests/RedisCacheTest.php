@@ -13,7 +13,6 @@ class RedisCacheTest extends \PHPUnit_Framework_TestCase
     protected function setUp()
     {
         $this->client = new Soupmix\Cache\RedisCache([
-
             'host'   => '127.0.0.1',
         ]);
         $this->client->clear();

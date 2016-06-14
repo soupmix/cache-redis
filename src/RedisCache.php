@@ -2,18 +2,22 @@
 
 namespace Soupmix\Cache;
 
+use Redis;
 
 class RedisCache implements CacheInterface
 {
 
     private static $defaults = [
         'persistent' => null,
+        'bucket' => 'default',
         'dbIndex' => 0,
         'port' => 6379,
         'timeout' => 2.5,
         'persistentId' => null,
         'reconnectAttempt' => 100
     ];
+
+    private $serializer = Redis::SERIALIZER_PHP;
 
     public $handler = null;
     /**
@@ -24,15 +28,18 @@ class RedisCache implements CacheInterface
      */
     public function __construct(array $config)
     {
-        $this->handler= new \Redis();
+        $this->handler = new Redis();
         $redisConfig= $this::$defaults;
         foreach ($config as $key=>$value) {
             $redisConfig[$key] = $value;
         }
+        if (file_exists('igbinary_serialize')) {
+            $this->serializer = Redis::SERIALIZER_IGBINARY;
+        }
         if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
             return $this->connect($redisConfig);
         }
-        return $this->persistentConnect($redisConfig);
+        $this->persistentConnect($redisConfig);
     }
 
     private function connect( array $redisConfig){
@@ -67,7 +74,7 @@ class RedisCache implements CacheInterface
     public function get($key)
     {
         $value = $this->handler->get($key);
-        return ($value) ? $value : null;
+        return ($value) ? $this->unserialize($value) : null;
     }
     /**
      * Persist data in the cache, uniquely referenced by a key with an optional expiration TTL time.
@@ -81,10 +88,19 @@ class RedisCache implements CacheInterface
      */
     public function set($key, $value, $ttl = null){
         $ttl = intval($ttl);
+        $value = $this->serialize($value);
         if($ttl ==0 ){
             return $this->handler->set($key, $value);
         }
         return $this->handler->set($key, $value, $ttl);
+    }
+
+    private function serialize($value){
+        return ($this->serializer === Redis::SERIALIZER_IGBINARY) ? igbinary_serialize($value) : serialize($value);
+    }
+
+    private function unserialize($value){
+        return ($this->serializer === Redis::SERIALIZER_IGBINARY) ? igbinary_unserialize($value) : unserialize($value);
     }
     /**
      * Delete an item from the cache by its unique key
