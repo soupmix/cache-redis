@@ -17,7 +17,7 @@ class RedisCache implements CacheInterface
         'reconnectAttempt' => 100
     ];
 
-    private $serializer = Redis::SERIALIZER_PHP;
+    private $serializer = "PHP";
 
     public $handler = null;
     /**
@@ -34,7 +34,7 @@ class RedisCache implements CacheInterface
             $redisConfig[$key] = $value;
         }
         if (file_exists('igbinary_serialize')) {
-            $this->serializer = Redis::SERIALIZER_IGBINARY;
+            $this->serializer = "IGBINARY";
         }
         if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
             return $this->connect($redisConfig);
@@ -96,11 +96,11 @@ class RedisCache implements CacheInterface
     }
 
     private function serialize($value){
-        return ($this->serializer === Redis::SERIALIZER_IGBINARY) ? igbinary_serialize($value) : serialize($value);
+        return ($this->serializer === "IGBINARY") ? igbinary_serialize($value) : serialize($value);
     }
 
     private function unserialize($value){
-        return ($this->serializer === Redis::SERIALIZER_IGBINARY) ? igbinary_unserialize($value) : unserialize($value);
+        return ($this->serializer === "IGBINARY") ? igbinary_unserialize($value) : unserialize($value);
     }
     /**
      * Delete an item from the cache by its unique key
