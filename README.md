@@ -5,7 +5,7 @@
 
 ### Installation
 
-It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix Cache Memcached Adaptor.
+It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix Cache Redis Adaptor.
 
 ```bash
 $ composer require soupmix/cache-redis "~0.1"
