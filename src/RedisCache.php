@@ -43,7 +43,7 @@ class RedisCache implements CacheInterface
             null,
             $redisConfig['reconnectAttempt']
         );
-        $this->handler->select($redisConfig['dbIndex']);
+        return $this->handler->select($redisConfig['dbIndex']);
     }
 
     private function persistentConnect( array $redisConfig){
@@ -53,7 +53,7 @@ class RedisCache implements CacheInterface
             $redisConfig['timeout'],
             $redisConfig['persistentId']
         );
-        $this->handler->select($redisConfig['dbIndex']);
+        return $this->handler->select($redisConfig['dbIndex']);
 
     }
 
@@ -113,7 +113,7 @@ class RedisCache implements CacheInterface
      */
     public function getMultiple($keys)
     {
-        return $this->handler->mGet($keys);
+        return array_combine($keys, $this->handler->mGet($keys));
     }
     /**
      * Persisting a set of key => value pairs in the cache, with an optional TTL.
