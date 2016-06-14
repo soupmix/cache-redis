@@ -17,9 +17,9 @@ class RedisCache implements CacheInterface
 
     public $handler = null;
     /**
-     * Connect to Memcached service
+     * Connect to Redis service
      *
-     * @param array $config Configuration values that has bucket name and hosts' IP addresses
+     * @param array $config Configuration values that has dbIndex name and host's IP address
      *
      */
     public function __construct(array $config)
