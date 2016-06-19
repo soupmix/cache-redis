@@ -10,10 +10,15 @@
       "name": "Mehmet Korkmaz",
       "email": "mehmet@mkorkmaz.com",
       "homepage": "https://mkorkmaz.com"
+    },
+    {
+      "name": "Haydar KULEKCI",
+      "email": "haydarkulekci@gmail.com",
+      "homepage": "https://kulekci.net"
     }
   ],
   "require": {
-    "php": ">=5.5",
+    "php": ">=5.6",
     "ext-redis":"*",
     "soupmix/cache-base": "~0.1"
   },
