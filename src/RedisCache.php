@@ -6,7 +6,6 @@ use Redis;
 
 class RedisCache implements CacheInterface
 {
-
     private static $defaults = [
         'persistent' => null,
         'bucket' => 'default',
@@ -37,12 +36,13 @@ class RedisCache implements CacheInterface
             $this->serializer = "IGBINARY";
         }
         if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
-            return $this->connect($redisConfig);
+            return $this->persistentConnect($redisConfig);
         }
-        $this->persistentConnect($redisConfig);
+        return $this->connect($redisConfig);
     }
 
-    private function connect( array $redisConfig){
+    private function connect( array $redisConfig)
+    {
         $this->handler->connect(
             $redisConfig['host'],
             $redisConfig['port'],
@@ -53,7 +53,8 @@ class RedisCache implements CacheInterface
         return $this->handler->select($redisConfig['dbIndex']);
     }
 
-    private function persistentConnect( array $redisConfig){
+    private function persistentConnect( array $redisConfig)
+    {
         $this->handler->pconnect(
             $redisConfig['host'],
             $redisConfig['port'],
@@ -61,7 +62,6 @@ class RedisCache implements CacheInterface
             $redisConfig['persistentId']
         );
         return $this->handler->select($redisConfig['dbIndex']);
-
     }
 
     /**
@@ -86,7 +86,8 @@ class RedisCache implements CacheInterface
      *
      * @return bool True on success and false on failure
      */
-    public function set($key, $value, $ttl = null){
+    public function set($key, $value, $ttl = null)
+    {
         $ttl = intval($ttl);
         $value = $this->serialize($value);
         if($ttl ==0 ){
@@ -95,11 +96,13 @@ class RedisCache implements CacheInterface
         return $this->handler->set($key, $value, $ttl);
     }
 
-    private function serialize($value){
+    private function serialize($value)
+    {
         return ($this->serializer === "IGBINARY") ? igbinary_serialize($value) : serialize($value);
     }
 
-    private function unserialize($value){
+    private function unserialize($value)
+    {
         return ($this->serializer === "IGBINARY") ? igbinary_unserialize($value) : unserialize($value);
     }
     /**
@@ -109,7 +112,8 @@ class RedisCache implements CacheInterface
      *
      * @return bool True on success and false on failure
      */
-    public function delete($key){
+    public function delete($key)
+    {
         return (bool) $this->handler->delete($key);
     }
     /**
@@ -117,7 +121,8 @@ class RedisCache implements CacheInterface
      *
      * @return bool True on success and false on failure
      */
-    public function clear(){
+    public function clear()
+    {
         return $this->handler->flushDb();
     }
     /**
