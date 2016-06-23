@@ -1,0 +1,16 @@
+# .scrutinizer.yml
+
+checks:
+  php:
+    code_rating: true
+    duplication: true
+build:
+  environment:
+    php: '5.6'
+  tests:
+    override:
+      -
+        command: 'phpunit --coverage-clover=.soupmix_coverage'
+        coverage:
+          file: '.soupmix_coverage'
+          format: 'clover'
