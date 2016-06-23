@@ -12,7 +12,7 @@ class RedisCache implements CacheInterface
         'dbIndex' => 0,
         'port' => 6379,
         'timeout' => 2.5,
-        'persistentId' => null,
+        'persistentId' => 'main',
         'reconnectAttempt' => 100
     ];
 
