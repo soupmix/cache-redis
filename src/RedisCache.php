@@ -32,7 +32,7 @@ class RedisCache implements CacheInterface
         foreach ($config as $key=>$value) {
             $redisConfig[$key] = $value;
         }
-        if (file_exists('igbinary_serialize')) {
+        if (function_exists('igbinary_serialize')) {
             $this->serializer = "IGBINARY";
         }
         if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
