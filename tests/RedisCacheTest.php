@@ -1,8 +1,8 @@
 <?php
 namespace tests;
 
-use Soupmix;
-
+use Soupmix\Cache as c;
+use Redis;
 class RedisCacheTest extends AbstractTestCases
 {
     /**
@@ -12,9 +12,16 @@ class RedisCacheTest extends AbstractTestCases
 
     protected function setUp()
     {
-        $this->client = new Soupmix\Cache\RedisCache([
-            'host'   => '127.0.0.1',
-        ]);
+        $handler = new Redis();
+        $handler->connect(
+            $this->redisConfig['host'],
+            $this->redisConfig['port'],
+            $this->redisConfig['timeout'],
+            null,
+            $this->redisConfig['reconnectAttempt']
+        );
+        $handler->select($this->redisConfig['dbIndex']);
+        $this->client = new c\RedisCache($handler);
         $this->client->clear();
     }
 }

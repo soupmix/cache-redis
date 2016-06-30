@@ -10,6 +10,17 @@ class AbstractTestCases extends \PHPUnit_Framework_TestCase
      */
     protected $client = null;
 
+    protected $redisConfig = [
+        'host'   => '127.0.0.1',
+        'persistent' => null,
+        'bucket' => 'default',
+        'dbIndex' => 0,
+        'port' => 6379,
+        'timeout' => 2.5,
+        'persistentId' => 'main',
+        'reconnectAttempt' => 100
+    ];
+
     public function testSetGetDeleteItem()
     {
         $ins1 = $this->client->set('test1','value1');

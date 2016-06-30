@@ -6,63 +6,30 @@ use Redis;
 
 class RedisCache implements CacheInterface
 {
-    private static $defaults = [
-        'persistent' => null,
-        'bucket' => 'default',
-        'dbIndex' => 0,
-        'port' => 6379,
-        'timeout' => 2.5,
-        'persistentId' => 'main',
-        'reconnectAttempt' => 100
-    ];
+    private $handler = null;
 
     private $serializer = "PHP";
 
-    public $handler = null;
     /**
      * Connect to Redis service
      *
-     * @param array $config Configuration values that has dbIndex name and host's IP address
+     * @param Redis $handler Configuration values that has dbIndex name and host's IP address
      *
      */
-    public function __construct(array $config)
+    public function __construct(Redis $handler)
     {
-        $this->handler = new Redis();
-        $redisConfig= $this::$defaults;
-        foreach ($config as $key=>$value) {
-            $redisConfig[$key] = $value;
-        }
+        $this->handler = $handler;
         if (function_exists('igbinary_serialize')) {
             $this->serializer = "IGBINARY";
         }
-        if ( isset($redisConfig['persistent']) && ($redisConfig['persistent'] === true)) {
-            return $this->persistentConnect($redisConfig);
-        }
-        return $this->connect($redisConfig);
     }
 
-    private function connect( array $redisConfig)
+
+    public function getConnection()
     {
-        $this->handler->connect(
-            $redisConfig['host'],
-            $redisConfig['port'],
-            $redisConfig['timeout'],
-            null,
-            $redisConfig['reconnectAttempt']
-        );
-        return $this->handler->select($redisConfig['dbIndex']);
+        return $this->handler;
     }
 
-    private function persistentConnect( array $redisConfig)
-    {
-        $this->handler->pconnect(
-            $redisConfig['host'],
-            $redisConfig['port'],
-            $redisConfig['timeout'],
-            $redisConfig['persistentId']
-        );
-        return $this->handler->select($redisConfig['dbIndex']);
-    }
 
     /**
      * Fetch a value from the cache.

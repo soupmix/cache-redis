@@ -8,17 +8,20 @@
 It's recommended that you use [Composer](https://getcomposer.org/) to install Soupmix Cache Redis Adaptor.
 
 ```bash
-$ composer require soupmix/cache-redis "~0.1.4"
+$ composer require soupmix/cache-redis "~0.2"
 ```
 
 ### Connection
 ```
 require_once '/path/to/composer/vendor/autoload.php';
 
-$rConfig = [];
-$rConfig['host'] = "127.0.0.1";
-$rConfig['dbIndex'] = 1;
-$cache = new Soupmix\Cache\RedisCache($rConfig);
+$rConfig = ['host'=> "127.0.0.1"];
+$handler = new Redis();
+$handler->connect(
+    $rConfig['host']
+);
+
+$cache = new Soupmix\Cache\RedisCache($handler);
 ```
 
 ### Soupmix Redis Cache API
