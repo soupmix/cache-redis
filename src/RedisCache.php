@@ -24,12 +24,10 @@ class RedisCache implements CacheInterface
         }
     }
 
-
     public function getConnection()
     {
         return $this->handler;
     }
-
 
     /**
      * Fetch a value from the cache.
@@ -43,6 +41,7 @@ class RedisCache implements CacheInterface
         $value = $this->handler->get($key);
         return ($value) ? $this->unserialize($value) : null;
     }
+
     /**
      * Persist data in the cache, uniquely referenced by a key with an optional expiration TTL time.
      *
