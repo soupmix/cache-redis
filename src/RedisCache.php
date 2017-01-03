@@ -2,13 +2,17 @@
 
 namespace Soupmix\Cache;
 
+use Soupmix\Cache\Exceptions\InvalidArgumentException;
+use Psr\SimpleCache\CacheInterface;
 use Redis;
 
 class RedisCache implements CacheInterface
 {
+    const PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
+
     private $handler = null;
 
-    private $serializer = "PHP";
+    private $serializer = 'PHP';
 
     /**
      * Connect to Redis service
@@ -20,7 +24,7 @@ class RedisCache implements CacheInterface
     {
         $this->handler = $handler;
         if (function_exists('igbinary_serialize')) {
-            $this->serializer = "IGBINARY";
+            $this->serializer = 'IGBINARY';
         }
     }
 
@@ -30,33 +34,22 @@ class RedisCache implements CacheInterface
     }
 
     /**
-     * Fetch a value from the cache.
-     *
-     * @param string $key The unique key of this item in the cache
-     *
-     * @return mixed The value of the item from the cache, or null in case of cache miss
+     * {@inheritDoc}
      */
-    public function get($key)
+    public function get($key, $default=null)
     {
         $value = $this->handler->get($key);
-        return ($value) ? $this->unserialize($value) : null;
+        return $value ? $this->unserialize($value) : $default;
     }
 
     /**
-     * Persist data in the cache, uniquely referenced by a key with an optional expiration TTL time.
-     *
-     * @param string $key The key of the item to store
-     * @param mixed $value The value of the item to store
-     * @param null|integer|DateInterval $ttl Optional. The TTL value of this item. If no value is sent and the driver supports TTL
-     *                                       then the library may set a default value for it or let the driver take care of that.
-     *
-     * @return bool True on success and false on failure
+     * {@inheritDoc}
      */
     public function set($key, $value, $ttl = null)
     {
-        $ttl = intval($ttl);
+        $ttl = (int) $ttl;
         $value = $this->serialize($value);
-        if($ttl ==0 ){
+        if($ttl === 0 ){
             return $this->handler->set($key, $value);
         }
         return $this->handler->set($key, $value, $ttl);
@@ -64,74 +57,64 @@ class RedisCache implements CacheInterface
 
     private function serialize($value)
     {
-        return ($this->serializer === "IGBINARY") ? igbinary_serialize($value) : serialize($value);
+        return ($this->serializer === 'IGBINARY') ? igbinary_serialize($value) : serialize($value);
     }
 
     private function unserialize($value)
     {
-        return ($this->serializer === "IGBINARY") ? igbinary_unserialize($value) : unserialize($value);
+        return ($this->serializer === 'IGBINARY') ? igbinary_unserialize($value) : unserialize($value);
     }
     /**
-     * Delete an item from the cache by its unique key
-     *
-     * @param string $key The unique cache key of the item to delete
-     *
-     * @return bool True on success and false on failure
+     * {@inheritDoc}
      */
     public function delete($key)
     {
         return (bool) $this->handler->delete($key);
     }
     /**
-     * Wipe clean the entire cache's keys
-     *
-     * @return bool True on success and false on failure
+     * {@inheritDoc}
      */
     public function clear()
     {
         return $this->handler->flushDb();
     }
     /**
-     * Obtain multiple cache items by their unique keys
-     *
-     * @param array|Traversable $keys A list of keys that can obtained in a single operation.
-     *
-     * @return array An array of key => value pairs. Cache keys that do not exist or are stale will have a value of null.
+     * {@inheritDoc}
      */
-    public function getMultiple($keys)
+    public function getMultiple($keys, $default=null)
     {
-        return array_combine($keys, $this->handler->mGet($keys));
+        $defaults = array_fill(0, count($keys), $default);
+        foreach ($keys as $key){
+            $this->checkReservedCharacters($key);
+        }
+        return array_merge(array_combine($keys, $this->handler->mGet($keys)), $defaults);
     }
     /**
-     * Persisting a set of key => value pairs in the cache, with an optional TTL.
-     *
-     * @param array|Traversable         $items An array of key => value pairs for a multiple-set operation.
-     * @param null|integer|DateInterval $ttl   Optional. The amount of seconds from the current time that the item will exist in the cache for.
-     *                                         If this is null then the cache backend will fall back to its own default behaviour.
-     *
-     * @return bool True on success and false on failure
+     * {@inheritDoc}
      */
-    public function setMultiple($items, $ttl = null)
+    public function setMultiple($values, $ttl = null)
     {
+        foreach ($values as $key => $value){
+            $this->checkReservedCharacters($key);
+        }
         if (($ttl === null) || ($ttl === 0)) {
-            return $this->handler->mSet($items);
+            return $this->handler->mSet($values);
         }
 
         $return =[];
-        foreach ($items as $key=>$value) {
+        foreach ($values as $key=>$value) {
             $return[$key] =  $this->set($key, $value, $ttl);
         }
         return $return;
     }
     /**
-     * Delete multiple cache items in a single operation
-     *
-     * @param array|Traversable $keys The array of string-based keys to be deleted
-     *
-     * @return bool True on success and false on failure
+     * {@inheritDoc}
      */
     public function deleteMultiple($keys)
     {
+        foreach ($keys as $key){
+            $this->checkReservedCharacters($key);
+        }
         $return =[];
         foreach ($keys as $key) {
             $return[$key] = (bool) $this->delete($key);
@@ -161,5 +144,26 @@ class RedisCache implements CacheInterface
     public function decrement($key, $step = 1)
     {
         return $this->handler->decr($key, $step);
+    }
+
+
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public function has($key) {
+        $this->checkReservedCharacters($key);
+        return $this->handler->exists($key);
+    }
+
+    private function checkReservedCharacters($key)
+    {
+        foreach (self::PSR16_RESERVED_CHARACTERS as $needle) {
+            if (strpos($key, $needle) !== false) {
+                $message = sprintf('%s string is not a legal value.', $key);
+                throw new InvalidArgumentException($message);
+            }
+        }
     }
 }
