@@ -36,7 +36,7 @@ class RedisCache implements CacheInterface
     /**
      * {@inheritDoc}
      */
-    public function get($key, $default=null)
+    public function get($key, $default = null)
     {
         $value = $this->handler->get($key);
         return $value ? $this->unserialize($value) : $default;
@@ -49,7 +49,7 @@ class RedisCache implements CacheInterface
     {
         $ttl = (int) $ttl;
         $value = $this->serialize($value);
-        if($ttl === 0 ){
+        if ($ttl === 0) {
             return $this->handler->set($key, $value);
         }
         return $this->handler->set($key, $value, $ttl);
@@ -81,10 +81,10 @@ class RedisCache implements CacheInterface
     /**
      * {@inheritDoc}
      */
-    public function getMultiple($keys, $default=null)
+    public function getMultiple($keys, $default = null)
     {
         $defaults = array_fill(0, count($keys), $default);
-        foreach ($keys as $key){
+        foreach ($keys as $key) {
             $this->checkReservedCharacters($key);
         }
         return array_merge(array_combine($keys, $this->handler->mGet($keys)), $defaults);
@@ -94,7 +94,7 @@ class RedisCache implements CacheInterface
      */
     public function setMultiple($values, $ttl = null)
     {
-        foreach ($values as $key => $value){
+        foreach ($values as $key => $value) {
             $this->checkReservedCharacters($key);
         }
         if (($ttl === null) || ($ttl === 0)) {
@@ -102,7 +102,7 @@ class RedisCache implements CacheInterface
         }
 
         $return =[];
-        foreach ($values as $key=>$value) {
+        foreach ($values as $key => $value) {
             $return[$key] =  $this->set($key, $value, $ttl);
         }
         return $return;
@@ -112,7 +112,7 @@ class RedisCache implements CacheInterface
      */
     public function deleteMultiple($keys)
     {
-        foreach ($keys as $key){
+        foreach ($keys as $key) {
             $this->checkReservedCharacters($key);
         }
         $return =[];
@@ -152,7 +152,8 @@ class RedisCache implements CacheInterface
     /**
      * {@inheritDoc}
      */
-    public function has($key) {
+    public function has($key)
+    {
         $this->checkReservedCharacters($key);
         return $this->handler->exists($key);
     }
