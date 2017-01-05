@@ -10,9 +10,8 @@ class RedisCache implements CacheInterface
 {
     const PSR16_RESERVED_CHARACTERS = ['{','}','(',')','/','@',':'];
 
-    private $handler = null;
+    private $handler;
 
-    private $serializer = 'PHP';
 
     /**
      * Connect to Redis service
@@ -153,12 +152,12 @@ class RedisCache implements CacheInterface
     {
 
         if (!is_string($key)) {
-            $message = sprintf('key %s is not a string.', $key);
+            $message = sprintf('Key %s is not a string.', $key);
             throw new InvalidArgumentException($message);
         }
         foreach (self::PSR16_RESERVED_CHARACTERS as $needle) {
             if (strpos($key, $needle) !== false) {
-                $message = sprintf('%s string is not a legal value.', $key);
+                $message = sprintf('Key %s has not a legal value.', $key);
                 throw new InvalidArgumentException($message);
             }
         }
