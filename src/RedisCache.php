@@ -22,10 +22,10 @@ class RedisCache implements CacheInterface
      */
     public function __construct(Redis $handler)
     {
-        $this->handler = $handler;
-        if (function_exists('igbinary_serialize')) {
-            $this->serializer = 'IGBINARY';
+        if (defined('Redis::SERIALIZER_IGBINARY') && extension_loaded('igbinary')) {
+            $handler->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_IGBINARY);
         }
+        $this->handler = $handler;
     }
 
     public function getConnection()
@@ -39,7 +39,7 @@ class RedisCache implements CacheInterface
     public function get($key, $default = null)
     {
         $value = $this->handler->get($key);
-        return $value ? $this->unserialize($value) : $default;
+        return $value ? $value : $default;
     }
 
     /**
@@ -48,22 +48,13 @@ class RedisCache implements CacheInterface
     public function set($key, $value, $ttl = null)
     {
         $ttl = (int) $ttl;
-        $value = $this->serialize($value);
+        $value = $value;
         if ($ttl === 0) {
             return $this->handler->set($key, $value);
         }
         return $this->handler->set($key, $value, $ttl);
     }
 
-    private function serialize($value)
-    {
-        return ($this->serializer === 'IGBINARY') ? igbinary_serialize($value) : serialize($value);
-    }
-
-    private function unserialize($value)
-    {
-        return ($this->serializer === 'IGBINARY') ? igbinary_unserialize($value) : unserialize($value);
-    }
     /**
      * {@inheritDoc}
      */
