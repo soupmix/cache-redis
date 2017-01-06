@@ -22,6 +22,9 @@
     "ext-redis":"*",
     "soupmix/cache-base": "~0.2"
   },
+  "provide": {
+    "psr/simple-cache-implementation": "~1.0"
+  },
   "autoload": {
     "psr-4": {
       "Soupmix\\Cache\\": "src/"

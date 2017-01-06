@@ -46,12 +46,14 @@ class RedisCache implements CacheInterface
      */
     public function set($key, $value, $ttl = null)
     {
-        $ttl = (int) $ttl;
-        $value = $value;
-        if ($ttl === 0) {
+        if ($ttl instanceof DateInterval) {
+            $ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
+        }
+        $setTtl = (int) $ttl;
+        if ($setTtl === 0) {
             return $this->handler->set($key, $value);
         }
-        return $this->handler->set($key, $value, $ttl);
+        return $this->handler->setex($key, $ttl, $value);
     }
 
     /**
@@ -66,7 +68,7 @@ class RedisCache implements CacheInterface
      */
     public function clear()
     {
-        return $this->handler->flushDb();
+        return $this->handler->flushDB();
     }
     /**
      * {@inheritDoc}
@@ -75,9 +77,9 @@ class RedisCache implements CacheInterface
     {
         $defaults = array_fill(0, count($keys), $default);
         foreach ($keys as $key) {
-            $this->checkReservedCharacters($key);
+            $this->checkKeysValidity($key);
         }
-        return array_merge(array_combine($keys, $this->handler->mGet($keys)), $defaults);
+        return array_merge(array_combine($keys, $this->handler->mget($keys)), $defaults);
     }
     /**
      * {@inheritDoc}
@@ -85,12 +87,15 @@ class RedisCache implements CacheInterface
     public function setMultiple($values, $ttl = null)
     {
         foreach ($values as $key => $value) {
-            $this->checkReservedCharacters($key);
+            $this->checkKeysValidity($key);
         }
-        if (($ttl === null) || ($ttl === 0)) {
-            return $this->handler->mSet($values);
+        if ($ttl instanceof DateInterval) {
+            $ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
         }
-
+        $setTtl = (int) $ttl;
+        if ($setTtl === 0) {
+            return $this->handler->mset($values);
+        }
         $return =[];
         foreach ($values as $key => $value) {
             $return[$key] =  $this->set($key, $value, $ttl);
@@ -103,7 +108,7 @@ class RedisCache implements CacheInterface
     public function deleteMultiple($keys)
     {
         foreach ($keys as $key) {
-            $this->checkReservedCharacters($key);
+            $this->checkKeysValidity($key);
         }
         $return =[];
         foreach ($keys as $key) {
@@ -144,13 +149,12 @@ class RedisCache implements CacheInterface
      */
     public function has($key)
     {
-        $this->checkReservedCharacters($key);
+        $this->checkKeysValidity($key);
         return $this->handler->exists($key);
     }
 
-    private function checkReservedCharacters($key)
+    private function checkKeysValidity($key)
     {
-
         if (!is_string($key)) {
             $message = sprintf('Key %s is not a string.', $key);
             throw new InvalidArgumentException($message);

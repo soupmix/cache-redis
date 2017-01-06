@@ -23,7 +23,7 @@ class AbstractTestCases extends \PHPUnit_Framework_TestCase
 
     public function testSetGetDeleteItem()
     {
-        $ins1 = $this->client->set('test1','value1');
+        $ins1 = $this->client->set('test1', 'value1');
         $this->assertTrue($ins1);
         $value1 = $this->client->get('test1');
         $this->assertEquals('value1',$value1);
