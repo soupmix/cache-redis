@@ -98,7 +98,7 @@ class RedisCache implements CacheInterface
         }
         $return =[];
         foreach ($values as $key => $value) {
-            $return[$key] =  $this->set($key, $value, $ttl);
+            $return[$key] =  $this->set($key, $value, $setTtl);
         }
         return $return;
     }
