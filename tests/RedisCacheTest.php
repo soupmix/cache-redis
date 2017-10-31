@@ -3,6 +3,7 @@ namespace tests;
 
 use Soupmix\Cache as c;
 use Redis;
+
 class RedisCacheTest extends AbstractTestCases
 {
     /**

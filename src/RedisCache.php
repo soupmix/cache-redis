@@ -5,6 +5,8 @@ namespace Soupmix\Cache;
 use Soupmix\Cache\Exceptions\InvalidArgumentException;
 use Psr\SimpleCache\CacheInterface;
 use Redis;
+use DateInterval;
+use DateTime;
 
 class RedisCache implements CacheInterface
 {
@@ -46,6 +48,7 @@ class RedisCache implements CacheInterface
      */
     public function set($key, $value, $ttl = null)
     {
+        $this->checkKeysValidity($key);
         if ($ttl instanceof DateInterval) {
             $ttl = (new DateTime('now'))->add($ttl)->getTimeStamp() - time();
         }
@@ -96,9 +99,10 @@ class RedisCache implements CacheInterface
         if ($setTtl === 0) {
             return $this->handler->mset($values);
         }
-        $return =[];
+        $return = true;
         foreach ($values as $key => $value) {
-            $return[$key] =  $this->set($key, $value, $setTtl);
+            $return = $return && $this->set($key, $value, $setTtl);
+
         }
         return $return;
     }
